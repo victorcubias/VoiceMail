@@ -39,8 +39,7 @@ class VoiceMail extends Component {
 
     render() {
         return(
-            <div>                
-                <button onClick={this.handleUpdateClick}>Obtener Esquema</button>
+            <div>                                
                 <button onClick={this.handleUpdateClick}>Obtener Datos</button>                
             </div>
         );
