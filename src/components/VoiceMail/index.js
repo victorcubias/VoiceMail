@@ -1,7 +1,12 @@
 import React, { Component } from 'react';
-import ReactTable from "react-table";
-
-
+import Table from '@material-ui/core/Table';
+import TableBody from '@material-ui/core/TableBody';
+import TableCell from '@material-ui/core/TableCell';
+import TableContainer from '@material-ui/core/TableContainer';
+import TableHead from '@material-ui/core/TableHead';
+import TableRow from '@material-ui/core/TableRow';
+import Paper from '@material-ui/core/Paper';
+import './styles.css'
 
 const serverUrl = '/v2';
 const credentials = 'NDY0MmU2NDA0MGNkYjhiODljMzEwYTIxYTA3YzdmNjI6MjMyNjQxNTY1OTA3NWU3NTAwMGNlY2Q3YmNiZjM3NTY=';
@@ -9,13 +14,10 @@ const accountId = '4642e64040cdb8b89c310a21a07c7f62';
 const vmBoxId = 'b37675a2d7b90d60f0ee5d4175502394';
 
 
+
 const headers = {
     Authorization: `Basic ${credentials}`    
 };
-
-
-
-   
 
 
 class VoiceMail extends Component {
@@ -33,7 +35,8 @@ async componentDidMount(){
                 throw Error(response.statusText);
             }
             return response.json();
-        }).then((response) =>{            
+        }).then((response) =>{          
+            console.log(response.data);
             this.setState({                
                 data: response.data
               });
@@ -41,31 +44,34 @@ async componentDidMount(){
               this.render();   
         });
 }
-
-                                                 
-    render() {        
-        console.log("this.state.data");
-        console.log(this.state.data.data);
+    
+    render() {                
         return (
-            <div>
-              {
-                this.state.data.map((dato,index) => {                                    
-                    return (
-                        <div key={index} style={{borderBottom: '2px solid black'}}>
-                          <p>Status: {dato.folder}</p>                                                                        
-                          <p>From: {dato.from}</p>                                                                        
-                          <p>To: {dato.to}</p>                                                                        
-                          <p>Duration: {dato.timestamp}</p>                                                                        
-                        </div>
-                      );
-                    })
-                
-              }
-            </div>
-          )                                
+        <TableContainer component={Paper}>
+            <Table className="tableStyle">
+                <TableHead>
+                <TableRow>
+                    <TableCell align="left">Status</TableCell>
+                    <TableCell align="left">From</TableCell>
+                    <TableCell align="left">To</TableCell>
+                    <TableCell align="left">Duration</TableCell>                    
+                </TableRow>
+                </TableHead>
+                <TableBody>                
+                {this.state.data.map((dato,index) => (                     
+                <TableRow>                    
+                    <TableCell scope="row" >{dato.folder}</TableCell>
+                    <TableCell align="left">{dato.from}</TableCell>
+                    <TableCell align="left">{dato.to}</TableCell>
+                    <TableCell align="left">{dato.timestamp}</TableCell>                                                                
+                </TableRow>                                
+                ))}                                                        
+                </TableBody>
+            </Table>
+            </TableContainer>                        
+        )                                
     }
 
-    
 }
 
 export default VoiceMail;
