@@ -24,51 +24,105 @@ class VoiceMail extends Component {
     constructor() {
         super();        
         this.state = {
-            data : []  
-        }
+            data : [],                 
+            state_selected: "new",
+            messagesSelected:"0",
+            isloading: false              
+        };
+        this.handleChange = this.handleChange.bind(this);
+        this.handleSave = this.handleSave.bind(this);
+        this.saveState = this.saveState.bind(this);
+    
     }
 
-async componentDidMount(){
-    await fetch(`${serverUrl}/accounts/${accountId}/vmboxes/${vmBoxId}/messages?paginate=true`,{ headers}).
+async componentDidMount(){   
+    this.setState({isloading: true}); 
+    await this.LoadPage();
+    this.setState({isloading: false});
+}
+
+async LoadPage(){
+    await fetch(`${serverUrl}/accounts/${accountId}/vmboxes/${vmBoxId}/messages`,{ headers }).
         then(function(response) {            
             if(!response.ok){                
                 throw Error(response.statusText);
             }
             return response.json();
-        }).then((response) =>{          
-            console.log(response.data);
+        }).then((response) =>{                      
             this.setState({                
                 data: response.data
-              });
-              console.log([response.data]);
+              });                       
               this.render();   
-        });
+        });        
 }
+
+    handleChange(e) {        
+        this.setState({ state_selected: e.target.value });
+    }
+
+  handleSave(e) {     
+    this.saveState(e.target.id.replace("btn",""));         
+  }
+
+  async saveState(callid){  
+    this.setState({isloading:true});        
+    await fetch(`${serverUrl}/accounts/${accountId}/vmboxes/${vmBoxId}/messages/${callid}?folder=${this.state.state_selected}`,{
+        method: 'POST',
+        headers
+    }).
+    then(function(response) {                    
+        if(!response.ok){                            
+            throw Error(response.statusText);
+        }        
+        return response.json();
+    }).then((response) =>{
+        this.setState({isloading: false});
+        this.LoadPage();                                          
+    });
+
+  }
     
-    render() {                
-        return (
-        <TableContainer component={Paper}>
+    render() {    
+        console.log(this.state.isloading);
+        if (this.state.isloading)
+        {
+            return <p>Loading ...</p>;
+        }
+        
+
+        return (        
+            
+            <TableContainer component={Paper}>
             <Table className="tableStyle">
                 <TableHead>
                 <TableRow>
                     <TableCell align="left">Status</TableCell>
                     <TableCell align="left">From</TableCell>
                     <TableCell align="left">To</TableCell>
-                    <TableCell align="left">Duration</TableCell>                    
+                    <TableCell align="left">Duration</TableCell>  
+                    <TableCell align="left">Modificar Estado</TableCell>  
                 </TableRow>
                 </TableHead>
                 <TableBody>                
                 {this.state.data.map((dato,index) => (                     
-                <TableRow>                    
+                <TableRow key={dato.call_id}>                    
                     <TableCell scope="row" >{dato.folder}</TableCell>
                     <TableCell align="left">{dato.from}</TableCell>
                     <TableCell align="left">{dato.to}</TableCell>
                     <TableCell align="left">{dato.timestamp}</TableCell>                                                                
+                    <TableCell align="left">                    
+                        <select onChange={this.handleChange} name="estado" id="estado">
+                        <option value="new">new</option>
+                            <option value="saved">saved</option>
+                            <option value="deleted">deleted</option>                            
+                        </select>
+                        <button id={`btn${dato.media_id}`} onClick={this.handleSave}>Modificar</button>
+                    </TableCell>
                 </TableRow>                                
                 ))}                                                        
                 </TableBody>
             </Table>
-            </TableContainer>                        
+            </TableContainer>                                                                                        
         )                                
     }
 
